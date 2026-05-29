@@ -1,4 +1,5 @@
 import flet as ft
+import os
 from views.engine_a_routine import create_routine_engine
 from views.engine_b_lessons import create_lessons_engine
 from views.engine_c_avian_eye import create_avian_eye_engine
@@ -12,9 +13,15 @@ from database import db_manager
 def main(page: ft.Page):
     page.title = "AvianQuest"
     page.theme_mode = ft.ThemeMode.DARK
-    page.window_width = 400
-    page.window_height = 800
     page.padding = 0
+
+    # Only set window dimensions for desktop mode (not web)
+    if not os.getenv("RENDER"):
+        try:
+            page.window_width = 400
+            page.window_height = 800
+        except Exception:
+            pass
 
     def handle_logout():
         page.clean() 
@@ -83,4 +90,10 @@ def main(page: ft.Page):
     db_manager.init_db() 
     route_user()
 
-ft.run(main)
+# --- DEPLOYMENT MODE ---
+# If running on Render (web), export ASGI app for Uvicorn
+# If running locally (desktop), launch the native Flet window
+if os.getenv("RENDER"):
+    app = ft.app(target=main, export_asgi_app=True)
+else:
+    ft.run(main)

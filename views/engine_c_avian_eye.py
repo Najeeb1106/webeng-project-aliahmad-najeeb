@@ -3,8 +3,6 @@ from google import genai
 from google.genai import types
 import asyncio
 import os
-import tkinter as tk
-from tkinter import filedialog
 from dotenv import load_dotenv
 
 # ⚡ THE FIX: You must actually execute the function to load the variables!
@@ -22,6 +20,7 @@ def create_avian_eye_engine(page: ft.Page):
     
     # --- 1. STATE MANAGEMENT ---
     selected_image_path = None
+    selected_image_bytes = None  # For web uploads
 
     # --- 2. UI COMPONENTS ---
     image_display = ft.Container(
@@ -47,33 +46,48 @@ def create_avian_eye_engine(page: ft.Page):
     loading_indicator = ft.ProgressBar(color="#CE82FF", bgcolor="#22FFFFFF", visible=False)
     analyze_btn = ft.ElevatedButton("Analyze Image", icon=ft.Icons.DOCUMENT_SCANNER, bgcolor="#CE82FF", color="#1A1A2E", disabled=True, expand=True)
 
-    # --- 3. THE NATIVE OS FILE PICKER HACK ---
-    def open_native_picker(e):
-        nonlocal selected_image_path
+    # --- 3. FLET FILE PICKER (Web-Compatible) ---
+    def on_file_picked(e: ft.FilePickerResultEvent):
+        nonlocal selected_image_path, selected_image_bytes
         
-        root = tk.Tk()
-        root.withdraw() 
-        root.attributes('-topmost', True) 
-        
-        filepath = filedialog.askopenfilename(
-            title="Select an Avian Photo",
-            filetypes=(("Image Files", "*.jpg;*.jpeg;*.png;*.webp"), ("All Files", "*.*"))
-        )
-        root.destroy() 
-        
-        if filepath:
-            selected_image_path = filepath
+        if e.files and len(e.files) > 0:
+            picked_file = e.files[0]
+            selected_image_path = picked_file.path  # Desktop: full path, Web: None
             
-            image_display.content = ft.Image(
-                src=selected_image_path,
-                fit="cover", 
-                expand=True
-            )
+            # For web, use the upload mechanism
+            if selected_image_path:
+                # Desktop mode: use the local file path
+                image_display.content = ft.Image(
+                    src=selected_image_path,
+                    fit="cover", 
+                    expand=True
+                )
+            else:
+                # Web mode: upload file to Flet server
+                upload_url = page.get_upload_url(picked_file.name, 600)
+                page.add(ft.Text("", visible=False))  # Trigger update
+                file_picker.upload([ft.FilePickerUploadFile(picked_file.name, upload_url)])
+                selected_image_path = os.path.join(page.get_upload_dir() if hasattr(page, 'get_upload_dir') else '/tmp', picked_file.name)
+                image_display.content = ft.Column([
+                    ft.Icon(ft.Icons.CHECK_CIRCLE, size=50, color="#CE82FF"),
+                    ft.Text(f"Image loaded: {picked_file.name}", color="white70", text_align="center")
+                ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                
             image_display.border = ft.Border.all(2, "#CE82FF") 
             
             analyze_btn.disabled = False
             result_markdown.value = "*Image loaded successfully. Ready for AI Analysis.*"
             page.update()
+
+    file_picker = ft.FilePicker(on_result=on_file_picked)
+    page.overlay.append(file_picker)
+
+    def open_picker(e):
+        file_picker.pick_files(
+            dialog_title="Select an Avian Photo",
+            allowed_extensions=["jpg", "jpeg", "png", "webp"],
+            allow_multiple=False
+        )
 
     # --- 4. AI ANALYSIS LOGIC ---
     async def process_image_analysis(filepath):
@@ -152,7 +166,7 @@ def create_avian_eye_engine(page: ft.Page):
                     bgcolor="#22FFFFFF", 
                     color="white", 
                     expand=True,
-                    on_click=open_native_picker 
+                    on_click=open_picker 
                 ),
                 analyze_btn
             ]),

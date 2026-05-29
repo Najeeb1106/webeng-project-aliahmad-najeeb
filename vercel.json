@@ -1,7 +1,0 @@
-{
-  "version": 2,
-  "cleanUrls": true,
-  "framework": null,
-  "buildCommand": "uv pip install --system flet-cli==0.85.2 && flet build web",
-  "outputDirectory": "build/web"
-}

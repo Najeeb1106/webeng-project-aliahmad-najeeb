@@ -129,7 +129,10 @@ def create_risk_engine(page: ft.Page):
                 pdf.cell(100, 5, "Lead Architect", align="C", center=True)
 
                 try:
-                    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+                    if os.name == 'nt' and os.environ.get('USERPROFILE'):
+                        desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
+                    else:
+                        desktop = '/tmp'
                     filepath = os.path.join(desktop, f"AvianQuest_Certificate_{user_name.replace(' ', '_')}.pdf")
                     pdf.output(filepath)
                 except Exception:

@@ -3,3 +3,4 @@ python-dotenv==1.2.2
 flet==0.85.2
 google-genai==2.7.0
 fpdf2==2.8.7
+uvicorn[standard]==0.34.3
