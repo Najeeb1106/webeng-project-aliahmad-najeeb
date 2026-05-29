@@ -81,19 +81,19 @@ def create_auth_engine(page: ft.Page, on_login_success):
         expand=True,
         padding=40,
         content=ft.Column([
-            ft.Container(height=60),
+            ft.Container(height=30),
             ft.Icon(ft.Icons.PETS, size=60, color="#CE82FF"),
             ft.Text("Welcome Back", size=32, weight="w900", color="white"),
             ft.Text("Sign in to access your flock.", size=14, color="white70"),
-            ft.Container(height=40),
+            ft.Container(height=25),
             login_email,
             ft.Container(height=10),
             login_password,
             ft.Container(height=20),
             ft.ElevatedButton("Sign In", bgcolor="#CE82FF", color="#1A1A2E", width=float('inf'), height=50, on_click=handle_login),
-            ft.Container(height=20),
+            ft.Container(height=15),
             ft.OutlinedButton("Create an Account", style=ft.ButtonStyle(color="white"), width=float('inf'), height=50, on_click=lambda e: change_view(e, "register"))
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO)
     )
 
     register_view = ft.Container(
@@ -103,7 +103,7 @@ def create_auth_engine(page: ft.Page, on_login_success):
             ft.IconButton(ft.Icons.ARROW_BACK, icon_color="white", on_click=lambda e: change_view(e, "login")),
             ft.Text("Join AvianQuest", size=32, weight="w900", color="white"),
             ft.Text("Create your secure account today.", size=14, color="white70"),
-            ft.Container(height=30),
+            ft.Container(height=20),
             reg_name,
             ft.Container(height=10),
             reg_email,
@@ -111,7 +111,7 @@ def create_auth_engine(page: ft.Page, on_login_success):
             reg_password,
             ft.Container(height=20),
             ft.ElevatedButton("Create Account", bgcolor="#58CC02", color="white", width=float('inf'), height=50, on_click=handle_register),
-        ])
+        ], scroll=ft.ScrollMode.AUTO)
     )
 
     main_container = ft.AnimatedSwitcher(
