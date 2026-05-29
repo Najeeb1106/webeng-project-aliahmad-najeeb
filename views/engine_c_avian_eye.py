@@ -47,14 +47,22 @@ def create_avian_eye_engine(page: ft.Page):
     analyze_btn = ft.ElevatedButton("Analyze Image", icon=ft.Icons.DOCUMENT_SCANNER, bgcolor="#CE82FF", color="#1A1A2E", disabled=True, expand=True)
 
     # --- 3. FLET FILE PICKER (Web-Compatible) ---
-    def on_file_picked(e: ft.FilePickerResultEvent):
+    file_picker = ft.FilePicker()
+    page.overlay.append(file_picker)
+
+    async def open_picker(e):
         nonlocal selected_image_path, selected_image_bytes
         
-        if e.files and len(e.files) > 0:
-            picked_file = e.files[0]
-            selected_image_path = picked_file.path  # Desktop: full path, Web: None
+        result = await file_picker.pick_files_async(
+            dialog_title="Select an Avian Photo",
+            allowed_extensions=["jpg", "jpeg", "png", "webp"],
+            allow_multiple=False
+        )
+        
+        if result and result.files and len(result.files) > 0:
+            picked_file = result.files[0]
+            selected_image_path = picked_file.path  # Desktop: full path, Web: may be None
             
-            # For web, use the upload mechanism
             if selected_image_path:
                 # Desktop mode: use the local file path
                 image_display.content = ft.Image(
@@ -63,11 +71,7 @@ def create_avian_eye_engine(page: ft.Page):
                     expand=True
                 )
             else:
-                # Web mode: upload file to Flet server
-                upload_url = page.get_upload_url(picked_file.name, 600)
-                page.add(ft.Text("", visible=False))  # Trigger update
-                file_picker.upload([ft.FilePickerUploadFile(picked_file.name, upload_url)])
-                selected_image_path = os.path.join(page.get_upload_dir() if hasattr(page, 'get_upload_dir') else '/tmp', picked_file.name)
+                # Web mode: show confirmation with filename
                 image_display.content = ft.Column([
                     ft.Icon(ft.Icons.CHECK_CIRCLE, size=50, color="#CE82FF"),
                     ft.Text(f"Image loaded: {picked_file.name}", color="white70", text_align="center")
@@ -78,16 +82,6 @@ def create_avian_eye_engine(page: ft.Page):
             analyze_btn.disabled = False
             result_markdown.value = "*Image loaded successfully. Ready for AI Analysis.*"
             page.update()
-
-    file_picker = ft.FilePicker(on_result=on_file_picked)
-    page.overlay.append(file_picker)
-
-    def open_picker(e):
-        file_picker.pick_files(
-            dialog_title="Select an Avian Photo",
-            allowed_extensions=["jpg", "jpeg", "png", "webp"],
-            allow_multiple=False
-        )
 
     # --- 4. AI ANALYSIS LOGIC ---
     async def process_image_analysis(filepath):
