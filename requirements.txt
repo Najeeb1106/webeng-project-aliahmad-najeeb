@@ -4,3 +4,5 @@ flet==0.85.2
 google-genai==2.7.0
 fpdf2==2.8.7
 uvicorn[standard]==0.34.3
+websockets==13.0.1
+
