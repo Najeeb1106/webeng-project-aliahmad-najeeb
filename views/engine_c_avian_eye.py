@@ -48,7 +48,7 @@ def create_avian_eye_engine(page: ft.Page):
 
     # --- 3. FLET FILE PICKER (Web-Compatible) ---
     file_picker = ft.FilePicker()
-    page.overlay.append(file_picker)
+
 
     async def open_picker(e):
         nonlocal selected_image_path, selected_image_bytes
