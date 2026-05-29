@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "framework": null,
+  "buildCommand": "pip install -r requirements.txt && flet build web",
+  "outputDirectory": "build/web"
+}
